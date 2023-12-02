@@ -6,7 +6,7 @@
        (<= g 13)
        (<= b 14)))
 
-(def gr
+(def games-log-grammar
   (peg/compile
    ~{:main (some :game)
 
@@ -30,7 +30,7 @@
                (/ "blue"  :blue))}))
 
 (defn answer [text]
-  (let [games (peg/match gr text)]
+  (let [games (peg/match games-log-grammar text)]
     (reduce (fn [tot {:game id :possible possible}]
               (+ tot (if possible id 0)))
             0
