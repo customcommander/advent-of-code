@@ -10,28 +10,29 @@
 
 # [1 2 3 4] -> [[1 2] [2 3] [3 4]]
 (defn sliding-pairs [xs]
-  (let [pairs @[]]
+  (let [ret @[]]
     (loop [i :range [0 (dec (length xs))]
            :let [a (get xs i)
                  b (get xs (inc i))]]
-      (array/push pairs [a b]))
-    pairs))
+      (array/push ret [a b]))
+    ret))
 
 (defn analyze [xs]
-  (let [res (group-by (fn [[a b]]
+  (let [ret (group-by (fn [[a b]]
                         (let [diff (math/abs (- a b))]
                           (cond
                             (= a b)    :err
                             (> diff 3) :err
                             (< a b)    :inc
                             (> a b)    :dec)))
-                      xs)]
-    (set (res :num-errors)
-         (let [len-err (length (or (res :err) []))
-               len-inc (length (or (res :inc) []))
-               len-dec (length (or (res :dec) []))]
-           (+ len-err (min len-inc len-dec))))
-    res))
+                      xs)
+        num-of |(length (or (ret $) []))]
+    (set (ret :num-errors)
+         (let [num-err (num-of :err) 
+               num-inc (num-of :inc) 
+               num-dec (num-of :dec)]
+           (+ num-err (min num-inc num-dec))))
+    ret))
 
 (defn solve-part-1 [reports]
   (count (fn [report]
