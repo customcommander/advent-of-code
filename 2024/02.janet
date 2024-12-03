@@ -7,9 +7,8 @@
     :eol (+ "\n" -1)})
 
 (defn analyze-report [report]
-  (let [ret @[]
-        max (dec (length report))]
-    (loop [i :range [0 max]
+  (let [ret @[]]
+    (loop [i :range [0 (dec (length report))]
            :let [a (get report i)
                  b (get report (inc i))
                  diff (math/abs (- a b))]]
