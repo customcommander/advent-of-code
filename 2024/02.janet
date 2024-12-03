@@ -6,20 +6,25 @@
     :num (number :d+)
     :eol (+ "\n" -1)})
 
-(defn safe-gap? [a b]
-  (<= (math/abs (- a b)) 3))
-
-(defn partition-window [xs]
-  (let [ys @[]]
-    (loop [i :range [0 (dec (length xs))]]
-      (array/push ys (array/slice xs i (+ i 2))))
-    ys))
+(defn analyze-report [report]
+  (let [ret @[]
+        max (dec (length report))]
+    (loop [i :range [0 max]
+           :let [a (get report i)
+                 b (get report (inc i))
+                 diff (math/abs (- a b))]]
+      (array/push ret [a b (cond
+                             (= a b)    :err
+                             (> diff 3) :err
+                             (< a b)    :inc
+                             (> a b)    :dec)]))
+    ret))
 
 (defn safe-report? [report]
-  (let [pairs (partition-window report)]
-    (and (or (all |(apply < $) pairs)
-             (all |(apply > $) pairs))
-         (all |(apply safe-gap? $) pairs))))
+  (let [res (group-by |(get $ 2) (analyze-report report))]
+    (and (not (res :err))
+         (or (not (res :inc))
+             (not (res :dec))))))
 
 (defn solve-part-1 [reports]
   (count safe-report? reports))
