@@ -6,29 +6,31 @@
     :num (number :d+)
     :eol (+ "\n" -1)})
 
-(defn analyze-report [report]
-  (let [ret @[]]
+(defn analyze [report]
+  (let [pairs @[]]
     (loop [i :range [0 (dec (length report))]
            :let [a (get report i)
                  b (get report (inc i))
                  diff (math/abs (- a b))]]
-      (array/push ret [a b (cond
-                             (= a b)    :err
-                             (> diff 3) :err
-                             (< a b)    :inc
-                             (> a b)    :dec)]))
-    ret))
+      (array/push pairs [a b (cond
+                               (= a b)    :err
+                               (> diff 3) :err
+                               (< a b)    :inc
+                               (> a b)    :dec)]))
+    {:report pairs
+     :errors (let [grp (group-by |(get $ 2) pairs)
+                   nerr (length (or (grp :err) []))
+                   ninc (length (or (grp :inc) []))
+                   ndec (length (or (grp :dec) []))]
+               (+ nerr (min ninc ndec)))}))
 
-(defn safe-report? [report]
-  (let [res (group-by |(get $ 2) (analyze-report report))]
-    (and (not (res :err))
-         (or (not (res :inc))
-             (not (res :dec))))))
+
 
 (defn solve-part-1 [reports]
-  (count safe-report? reports))
+  (count |(zero? ((analyze $) :errors)) reports))
 
-(defn solve-part-2 [reports])
+(defn solve-part-2 [reports]
+  )
 
 (def input-sample
 ```
