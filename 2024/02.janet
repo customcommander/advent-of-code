@@ -36,8 +36,8 @@
 
 (defn solve-part-1 [reports]
   (count (fn [report]
-           (let [pairs (sliding-pairs report)]
-             (zero? ((analyze pairs) :num-errors))))
+           (let [xs (sliding-pairs report)]
+             (zero? ((analyze xs) :num-errors))))
          reports))
 
 (defn solve-part-2 [reports]
