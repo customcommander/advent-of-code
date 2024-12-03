@@ -28,10 +28,9 @@
                       xs)
         num-of |(length (or (ret $) []))]
     (set (ret :num-errors)
-         (let [num-err (num-of :err) 
-               num-inc (num-of :inc) 
-               num-dec (num-of :dec)]
-           (+ num-err (min num-inc num-dec))))
+         (+ (num-of :err)
+            (min (num-of :inc)
+                 (num-of :dec))))
     ret))
 
 (defn solve-part-1 [reports]
