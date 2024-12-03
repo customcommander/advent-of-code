@@ -1,33 +1,43 @@
 # https://adventofcode.com/2024/day/2
 
-(def grammar 
-  '{:main (some :line)
-    :line (* (group (* (some (* :num " ")) :num)) :eol)
-    :num (number :d+)
-    :eol (+ "\n" -1)})
+(defn parse [txt]
+  (peg/match
+   '{:main (some :line)
+     :line (* (group (* (some (* :num " ")) :num)) :eol)
+     :num (number :d+)
+     :eol (+ "\n" -1)}
+   txt))
 
-(defn analyze [report]
+# [1 2 3 4] -> [[1 2] [2 3] [3 4]]
+(defn sliding-pairs [xs]
   (let [pairs @[]]
-    (loop [i :range [0 (dec (length report))]
-           :let [a (get report i)
-                 b (get report (inc i))
-                 diff (math/abs (- a b))]]
-      (array/push pairs [a b (cond
-                               (= a b)    :err
-                               (> diff 3) :err
-                               (< a b)    :inc
-                               (> a b)    :dec)]))
-    {:report pairs
-     :errors (let [grp (group-by |(get $ 2) pairs)
-                   nerr (length (or (grp :err) []))
-                   ninc (length (or (grp :inc) []))
-                   ndec (length (or (grp :dec) []))]
-               (+ nerr (min ninc ndec)))}))
+    (loop [i :range [0 (dec (length xs))]
+           :let [a (get xs i)
+                 b (get xs (inc i))]]
+      (array/push pairs [a b]))
+    pairs))
 
-
+(defn analyze [xs]
+  (let [res (group-by (fn [[a b]]
+                        (let [diff (math/abs (- a b))]
+                          (cond
+                            (= a b)    :err
+                            (> diff 3) :err
+                            (< a b)    :inc
+                            (> a b)    :dec)))
+                      xs)]
+    (set (res :num-errors)
+         (let [len-err (length (or (res :err) []))
+               len-inc (length (or (res :inc) []))
+               len-dec (length (or (res :dec) []))]
+           (+ len-err (min len-inc len-dec))))
+    res))
 
 (defn solve-part-1 [reports]
-  (count |(zero? ((analyze $) :errors)) reports))
+  (count (fn [report]
+           (let [pairs (sliding-pairs report)]
+             (zero? ((analyze pairs) :num-errors))))
+         reports))
 
 (defn solve-part-2 [reports]
   )
@@ -1046,7 +1056,7 @@
 88 86 85 84 82 79
 ```)
 
-(let [reports (peg/match grammar input)]
+(let [reports (parse input)]
   (comment)
   (print (solve-part-1 reports))
   (comment
