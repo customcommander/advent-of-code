@@ -55,7 +55,7 @@
      :updates updates}))
 
 (defn page->order [rules pages page]
-  (apply + (map |(or ((rules page) $) 0) pages)))
+  (+ ;(map |(or ((rules page) $) 0) pages)))
 
 (defn compute-page-order [rules pages]
   (let [f (partial page->order rules pages)]
@@ -65,12 +65,14 @@
   (< ;(map order pages)))
 
 (defn compute-answer [correct-updates]
-  (apply + (map |(get $ (/ (dec (length $)) 2)) correct-updates)))
+  (+ ;(map |(get $ (/ (dec (length $)) 2)) correct-updates)))
 
 (defn solve-part-1 [{:rules rules :updates updates}]
-  (compute-answer (filter (fn [pages]
-                            (let [order (compute-page-order rules pages)]
-                              (update-ok? order pages))) updates)))
+  (compute-answer
+   (filter (fn [pages]
+             (let [order (compute-page-order rules pages)]
+               (update-ok? order pages)))
+           updates)))
 
 (defn solve-part-2 [{:rules rules :updates updates}]
   (compute-answer
