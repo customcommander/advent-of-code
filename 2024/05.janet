@@ -47,26 +47,39 @@
               (fn [t [a b]]
                 (let [at (or (get t a) (set (t a) @{}))
                       bt (or (get t b) (set (t b) @{}))]
-                  (set (at b) :>) # i.e. a > b
-                  (set (bt a) :<) # i.e. b < a
+                  (set (at b) 0) # i.e. a > b
+                  (set (bt a) 1) # i.e. b < a
                   t))
               @{}
               rules)
      :updates updates}))
 
-(defn update-ok? [rules [page & pages]]
-  (let [order (map |(get-in rules [$ page] :<) pages)
-        ok? (all |(= $ :<) order)]
-    (cond
-      (not ok?) false
-      (= (length pages) 1) true
-      (update-ok? rules pages))))
+(defn page->order [rules pages page]
+  (apply + (map |(or ((rules page) $) 0) pages)))
+
+(defn compute-page-order [rules pages]
+  (let [f (partial page->order rules pages)]
+    (from-pairs (map |(tuple $ (f $)) pages))))
+
+(defn update-ok? [order pages]
+  (< ;(map order pages)))
+
+(defn compute-answer [correct-updates]
+  (apply + (map |(get $ (/ (dec (length $)) 2)) correct-updates)))
 
 (defn solve-part-1 [{:rules rules :updates updates}]
-  (apply + (map |(if (update-ok? rules $)
-                   (get $ (/ (dec (length $)) 2))
-                   0)
-                updates)))
+  (compute-answer (filter (fn [pages]
+                            (let [order (compute-page-order rules pages)]
+                              (update-ok? order pages))) updates)))
+
+(defn solve-part-2 [{:rules rules :updates updates}]
+  (compute-answer
+   (filter identity
+           (map (fn [pages]
+                  (let [order (compute-page-order rules pages)]
+                    (if-not (update-ok? order pages)
+                      (sort-by order pages))))
+                updates))))
 
 (def input
 ```
@@ -1459,5 +1472,8 @@
 29,35,37,13,48,33,23,25,56,96,89,17,81,21,83,24,52,22,92,99,88
 ```)
 
-(let [res (parse input)]
-  (print (solve-part-1 res)))
+(let [parsed-input (parse input)]
+  (comment)
+  (print (solve-part-1 parsed-input))
+  (comment)
+  (print (solve-part-2 parsed-input)))
