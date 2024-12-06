@@ -20,25 +20,23 @@
          "." :empty
          "#" :obstacle}
 
-        grammar
-        ~{:main (some :line)
-          :line (* (some :char) (+ "\n" -1))
-          :char (group (* (column) (line) (/ '(set "^#.") ,char->type)))}]
+        coords
+        (peg/match
+         ~{:main (some :line)
+           :line (* (some :char) (+ "\n" -1))
+           :char (group (* (column) (line) (/ '(set "^#.") ,char->type)))}
+         txt)]
+    (merge
+     {:dimensions
+        (let [[x y] (array/peek coords)]
+          [x y])
+      :start
+        (let [[x y] (find |(= (get $ 2) :start) coords)]
+          [x y])}
 
-    (peg/match grammar txt)))
-
-(defn init-board [coords]
-  (merge
-   {:dimensions
-      (let [[x y] (array/peek coords)]
-        [x y])
-    :start
-      (let [[x y] (find |(= (get $ 2) :start) coords)]
-        [x y])}
-
-   ;(map (fn [[x y status]]
-           {[x y] status})
-         coords)))
+     ;(map (fn [[x y status]]
+             {[x y] status})
+           coords))))
 
 (def next-dir
   {:^ :>
@@ -63,26 +61,27 @@
         (< y 1)
         (> y y-max))))
 
-(defn solve-part-1 [coords]
-  (let [board (init-board coords)]
-    (var dir :^)
-    (var [x y] (board :start))
+(defn exit-lab [board]
+  (var dir :^)
+  (var [x y] (board :start))
 
-    (loop [_ :iterate (not (is-out? board x y))]
+  (loop [_ :iterate (not (is-out? board x y))]
 
-      (when (is-blocked? board dir x y)
-        (set dir (next-dir dir)))
+    (when (is-blocked? board dir x y)
+      (set dir (next-dir dir)))
 
-      (let [coord ((next-coord dir) x y)]
-        (set x (get coord 0))
-        (set y (get coord 1)))
+    (let [coord ((next-coord dir) x y)]
+      (set x (get coord 0))
+      (set y (get coord 1)))
 
-      (unless (is-out? board x y)
-        (set (board [x y]) :visited)))
+    (unless (is-out? board x y)
+      (set (board [x y]) :visited)))
 
-    (count |(or (= $ :visited)
-                (= $ :start))
-           board)))
+  (print
+   (count |(or (= $ :visited)
+               (= $ :start))
+          board))
+  board)
 
 
 (def input
@@ -219,5 +218,6 @@
 ...............#.....................#...#..........................................#..........#......#...........................
 ```)
 
-(let [coords (parse input)]
-  (print (solve-part-1 coords)))
+(let [board (parse input)]
+  (-> board
+      exit-lab))
