@@ -559,9 +559,9 @@ p=52,4 v=-66,-15
 ```)
 
 (let [inp input
-     robots (parse inp)
-     m (if (= inp input-sample) 11 101)
-     n (if (= inp input-sample) 7 103)
-     s 100]
+      robots (parse inp)
+      m (if (= inp input-sample) 11 101)
+      n (if (= inp input-sample) 7 103)
+      s 100]
   (print (solve-part-1 robots [m n] s)))
 
